@@ -55,12 +55,10 @@ academic-workload-analyzer/
 
 ### Steps
 
-1. **Clone the repository** (or extract the ZIP file)
-
+1. **Clone the repository**
 ```bash
-git clone [https://github.com/Ahmed55455/academic-workload-analyzer.git]
-          (https://github.com/Ahmed55455/academic-workload-analyzer.git)
-          cd academic-workload-analyzer
+git clone [https://github.com/Ahmed55455/Academic-Workload-Analyzer.git]
+ cd academic-workload-analyzer
 
 ```
 
