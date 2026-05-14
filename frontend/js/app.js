@@ -57,6 +57,40 @@ async function loadDashboardStats() {
 
     // Update Busiest Course
     document.getElementById('stat-busiest').textContent = stats.busiestCourseName;
+
+    // Update Tasks Per Course (المكان الصحيح هنا)
+    const courseBreakdown = document.getElementById('course-breakdown');
+    if (stats.tasksPerCourse && stats.tasksPerCourse.length > 0) {
+        courseBreakdown.innerHTML = stats.tasksPerCourse.map(c => `
+            <div class="d-flex justify-content-between align-items-center mb-2 pb-2 border-bottom">
+                <span class="text-secondary fw-semibold">${c.name}</span>
+                <span class="badge bg-primary rounded-pill px-3 py-2">${c.count} Tasks</span>
+            </div>
+        `).join('');
+    } else {
+        courseBreakdown.innerHTML = '<p class="text-muted">No course data available.</p>';
+    }
+
+    // Update Urgency Status (المكان الصحيح هنا)
+    const urgencyBreakdown = document.getElementById('urgency-breakdown');
+    if (stats.urgency && (stats.urgency.high > 0 || stats.urgency.medium > 0 || stats.urgency.low > 0)) {
+        urgencyBreakdown.innerHTML = `
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <span class="text-danger fw-bold"><i class="bi bi-circle-fill me-2"></i>High (≤ 3 Days)</span>
+                <span class="fs-5 fw-bold">${stats.urgency.high}</span>
+            </div>
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <span class="text-warning fw-bold"><i class="bi bi-circle-fill me-2"></i>Medium (≤ 7 Days)</span>
+                <span class="fs-5 fw-bold">${stats.urgency.medium}</span>
+            </div>
+            <div class="d-flex justify-content-between align-items-center">
+                <span class="text-success fw-bold"><i class="bi bi-circle-fill me-2"></i>Low (> 7 Days)</span>
+                <span class="fs-5 fw-bold">${stats.urgency.low}</span>
+            </div>
+        `;
+    } else {
+        urgencyBreakdown.innerHTML = '<p class="text-muted">No upcoming deadlines.</p>';
+    }
 }
 
 // ==================== COURSES LOGIC ====================
@@ -132,7 +166,6 @@ async function saveCourse() {
     const courseData = { name, instructor };
 
     if (id) {
-        // Update existing via PUT (Note: You'd need to add updateCourse in api.js if you want full edit functionality, for now let's focus on Creation as per strict requirements, or simply assume it's added. Let's add it via API)
         await fetch(`/api/courses/${id}`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
@@ -140,14 +173,13 @@ async function saveCourse() {
         });
         showToast("Course updated successfully!");
     } else {
-        // Create new
         await addCourse(courseData);
         showToast("Course added successfully!");
     }
 
     getCourseModal().hide();
     loadCourses();
-    loadDashboardStats(); // Refresh stats
+    loadDashboardStats(); 
 }
 
 async function removeCourse(id) {
