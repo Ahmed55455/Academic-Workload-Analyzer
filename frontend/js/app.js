@@ -1,7 +1,3 @@
-// frontend/js/app.js
-// Project: Academic Workload Analyzer
-// Author: Ahmed Ehab Hassan Ali (ID: 220303975)
-
 // ==================== INITIALIZATION ====================
 document.addEventListener('DOMContentLoaded', () => {
     // Load initial data
@@ -58,7 +54,7 @@ async function loadDashboardStats() {
     // Update Busiest Course
     document.getElementById('stat-busiest').textContent = stats.busiestCourseName;
 
-    // Update Tasks Per Course (المكان الصحيح هنا)
+    // Update Tasks Per Course
     const courseBreakdown = document.getElementById('course-breakdown');
     if (stats.tasksPerCourse && stats.tasksPerCourse.length > 0) {
         courseBreakdown.innerHTML = stats.tasksPerCourse.map(c => `
@@ -71,7 +67,7 @@ async function loadDashboardStats() {
         courseBreakdown.innerHTML = '<p class="text-muted">No course data available.</p>';
     }
 
-    // Update Urgency Status (المكان الصحيح هنا)
+    // Update Urgency Status
     const urgencyBreakdown = document.getElementById('urgency-breakdown');
     if (stats.urgency && (stats.urgency.high > 0 || stats.urgency.medium > 0 || stats.urgency.low > 0)) {
         urgencyBreakdown.innerHTML = `
