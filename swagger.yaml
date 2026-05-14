@@ -1,0 +1,167 @@
+openapi: 3.0.0
+info:
+  title: Academic Workload Analyzer API
+  description: RESTful API documentation for managing courses and tasks.
+  version: 1.0.0
+servers:
+  - url: http://localhost:3000
+    description: Local development server
+
+paths:
+  /api/dashboard/stats:
+    get:
+      summary: Retrieve workload dashboard statistics
+      responses:
+        '200':
+          description: Successfully retrieved statistics
+
+  /api/courses:
+    get:
+      summary: Get all courses
+      responses:
+        '200':
+          description: A list of courses
+    post:
+      summary: Create a new course
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - name
+              properties:
+                name:
+                  type: string
+                  example: "System Analysis and Design"
+                instructor:
+                  type: string
+                  example: "Dr. Ahmed"
+      responses:
+        '201':
+          description: Course created successfully
+
+  /api/courses/{id}:
+    put:
+      summary: Update an existing course
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+          description: Numeric ID of the course
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                instructor:
+                  type: string
+      responses:
+        '200':
+          description: Course updated successfully
+        '404':
+          description: Course not found
+    delete:
+      summary: Delete a course and its associated tasks
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Course deleted successfully
+        '404':
+          description: Course not found
+
+  /api/tasks:
+    get:
+      summary: Get all tasks
+      responses:
+        '200':
+          description: A list of tasks with associated course names
+    post:
+      summary: Create a new task
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - title
+              properties:
+                title:
+                  type: string
+                  example: "Finish SAD Project"
+                description:
+                  type: string
+                  example: "Complete the code and documentation"
+                status:
+                  type: string
+                  enum: [pending, in-progress, completed]
+                  example: "pending"
+                deadline:
+                  type: string
+                  format: date
+                  example: "2026-05-21"
+                course_id:
+                  type: integer
+                  example: 1
+      responses:
+        '201':
+          description: Task created successfully
+
+  /api/tasks/{id}:
+    put:
+      summary: Update a task
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                description:
+                  type: string
+                status:
+                  type: string
+                deadline:
+                  type: string
+                  format: date
+                course_id:
+                  type: integer
+      responses:
+        '200':
+          description: Task updated successfully
+        '404':
+          description: Task not found
+    delete:
+      summary: Delete a task
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Task deleted successfully
+        '404':
+          description: Task not found
