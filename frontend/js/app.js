@@ -1,6 +1,22 @@
+// frontend/js/app.js
+// Project: Academic Workload Analyzer
+// Author: Ahmed Ehab Hassan Ali (ID: 220303975)
+
+// ==================== AUTHENTICATION GUARD ====================
+// Fulfill teacher requirement: Immediate view routing verification
+if (!localStorage.getItem('token')) {
+    window.location.href = 'login.html';
+}
+
 // ==================== INITIALIZATION ====================
 document.addEventListener('DOMContentLoaded', () => {
-    // Load initial data
+    // Inject the logged-in user's name into the top navbar component
+    const savedUser = localStorage.getItem('username');
+    if (savedUser) {
+        document.getElementById('nav-username').textContent = savedUser;
+    }
+
+    // Load initial data for the current user session context
     loadDashboardStats();
     loadCourses();
     loadTasks();
@@ -8,6 +24,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // ==================== UI & TABS MANAGEMENT ====================
 function showTab(tabId) {
+// ... keep the rest of your original app.js file exactly as it was ...
     // Hide all sections
     document.getElementById('dashboard-section').style.display = 'none';
     document.getElementById('courses-section').style.display = 'none';
@@ -54,7 +71,7 @@ async function loadDashboardStats() {
     // Update Busiest Course
     document.getElementById('stat-busiest').textContent = stats.busiestCourseName;
 
-    // Update Tasks Per Course
+    // Update Tasks Per Course (المكان الصحيح هنا)
     const courseBreakdown = document.getElementById('course-breakdown');
     if (stats.tasksPerCourse && stats.tasksPerCourse.length > 0) {
         courseBreakdown.innerHTML = stats.tasksPerCourse.map(c => `
@@ -67,7 +84,7 @@ async function loadDashboardStats() {
         courseBreakdown.innerHTML = '<p class="text-muted">No course data available.</p>';
     }
 
-    // Update Urgency Status
+    // Update Urgency Status (المكان الصحيح هنا)
     const urgencyBreakdown = document.getElementById('urgency-breakdown');
     if (stats.urgency && (stats.urgency.high > 0 || stats.urgency.medium > 0 || stats.urgency.low > 0)) {
         urgencyBreakdown.innerHTML = `
@@ -150,41 +167,45 @@ async function loadCourses() {
 }
 
 async function saveCourse() {
-    const id = document.getElementById('course-id').value;
-    const name = document.getElementById('course-name').value;
-    const instructor = document.getElementById('course-instructor').value;
+    try {
+        const id = document.getElementById('course-id').value;
+        const name = document.getElementById('course-name').value;
+        const instructor = document.getElementById('course-instructor').value;
 
-    if (!name) {
-        alert("Course name is required!");
-        return;
-    }
+        if (!name) {
+            alert("Course name is required!");
+            return;
+        }
 
-    const courseData = { name, instructor };
+        const courseData = { name, instructor };
 
-    if (id) {
-        await fetch(`/api/courses/${id}`, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(courseData)
-        });
-        showToast("Course updated successfully!");
-    } else {
-        await addCourse(courseData);
-        showToast("Course added successfully!");
-    }
+        if (id) {
+            // Diagnostic check: Verify if the function exists in api.js
+            if (typeof updateCourse !== 'function') {
+                throw new Error("The function 'updateCourse' cannot be found! Make sure it is saved inside frontend/js/api.js.");
+            }
+            
+            const response = await updateCourse(id, courseData);
+            if (response && !response.error) {
+                showToast("Course updated successfully!");
+            } else {
+                alert("Failed to update course. Server rejected the request.");
+            }
+        } else {
+            if (typeof addCourse !== 'function') {
+                throw new Error("The function 'addCourse' cannot be found inside frontend/js/api.js.");
+            }
+            await addCourse(courseData);
+            showToast("Course added successfully!");
+        }
 
-    getCourseModal().hide();
-    loadCourses();
-    loadDashboardStats(); 
-}
-
-async function removeCourse(id) {
-    if (confirm("Are you sure? This will delete the course and all associated tasks!")) {
-        await deleteCourse(id);
-        showToast("Course deleted.");
+        getCourseModal().hide();
         loadCourses();
-        loadTasks();
-        loadDashboardStats();
+        loadDashboardStats(); 
+    } catch (error) {
+        // This stops the silent freezing and pops the exact code error onto your screen!
+        console.error("Error inside saveCourse execution path:", error);
+        alert("🚨 JavaScript Error Intercepted: " + error.message);
     }
 }
 

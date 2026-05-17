@@ -1,14 +1,20 @@
 openapi: 3.0.0
 info:
   title: Academic Workload Analyzer API
-  description: RESTful API documentation for managing courses and tasks.
+  description: RESTful API documentation for managing courses, tasks, and tracking individual student workloads.
   version: 1.0.0
 servers:
   - url: http://localhost:3000
     description: Local development server
 
+# Apply global JWT security verification to data endpoints by default
+security:
+  - BearerAuth: []
+
 # Define the groups (tags)
 tags:
+  - name: Auth
+    description: Public endpoints for user registration and authentication
   - name: Dashboard
     description: Statistics and metrics for the main dashboard
   - name: Courses
@@ -17,27 +23,88 @@ tags:
     description: Endpoints for managing assignments and tasks
 
 paths:
+  # ================= AUTHENTICATION (PUBLIC) =================
+  /api/auth/register:
+    post:
+      tags:
+        - Auth
+      summary: Register a new student account
+      security: [] # Overrides global lock to make this route public
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - username
+                - password
+              properties:
+                username:
+                  type: string
+                  example: "ahmed123"
+                password:
+                  type: string
+                  example: "securepass123"
+      responses:
+        '201':
+          description: User registered successfully
+        '400':
+          description: Username already exists or missing data elements
+
+  /api/auth/login:
+    post:
+      tags:
+        - Auth
+      summary: Authenticate user and receive session JWT token
+      security: [] # Overrides global lock to make this route public
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - username
+                - password
+              properties:
+                username:
+                  type: string
+                  example: "ahmed123"
+                password:
+                  type: string
+                  example: "securepass123"
+      responses:
+        '200':
+          description: Authentication successful, access token returned
+        '401':
+          description: Invalid username or password entry
+
+  # ================= DASHBOARD (PROTECTED) =================
   /api/dashboard/stats:
     get:
       tags:
         - Dashboard
-      summary: Retrieve workload dashboard statistics
+      summary: Retrieve isolated workload dashboard statistics
       responses:
         '200':
-          description: Successfully retrieved statistics
+          description: Successfully retrieved statistics for current user session
+        '401':
+          description: Unauthorized access. Valid JWT token missing
 
+  # ================= COURSES (PROTECTED) =================
   /api/courses:
     get:
       tags:
         - Courses
-      summary: Get all courses
+      summary: Get all courses belonging to logged-in user
       responses:
         '200':
-          description: A list of courses
+          description: A list of courses owned by the user
     post:
       tags:
         - Courses
-      summary: Create a new course
+      summary: Create a new course tied to current user account
       requestBody:
         required: true
         content:
@@ -84,7 +151,7 @@ paths:
         '200':
           description: Course updated successfully
         '404':
-          description: Course not found
+          description: Course not found or user unauthorized to modify it
     delete:
       tags:
         - Courses
@@ -99,20 +166,21 @@ paths:
         '200':
           description: Course deleted successfully
         '404':
-          description: Course not found
+          description: Course not found or user unauthorized to delete it
 
+  # ================= TASKS (PROTECTED) =================
   /api/tasks:
     get:
       tags:
         - Tasks
-      summary: Get all tasks
+      summary: Get all tasks belonging to logged-in user
       responses:
         '200':
-          description: A list of tasks with associated course names
+          description: A list of user tasks with associated course names
     post:
       tags:
         - Tasks
-      summary: Create a new task
+      summary: Create a new task tied to current user account
       requestBody:
         required: true
         content:
@@ -176,7 +244,7 @@ paths:
         '200':
           description: Task updated successfully
         '404':
-          description: Task not found
+          description: Task not found or user unauthorized to modify it
     delete:
       tags:
         - Tasks
@@ -191,4 +259,13 @@ paths:
         '200':
           description: Task deleted successfully
         '404':
-          description: Task not found
+          description: Task not found or user unauthorized to delete it
+
+# Cryptographic and protocol layer parameter handling definition definitions
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: Paste your valid session JWT token (obtained via login endpoint) here to safely query protected user operations.

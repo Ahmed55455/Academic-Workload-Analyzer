@@ -10,23 +10,34 @@ const db = new sqlite3.Database(dbPath, (err) => {
     if (err) {
         console.error('Error connecting to the database:', err.message);
     } else {
-        console.log('Connected to the SQLite database.');
+        console.log('Connected to the SQLite database with multi-user support.');
         initializeTables();
     }
 });
 
 // Function to create the necessary tables
 function initializeTables() {
-    // Schema for Courses
+    // Schema for Users (New table for JWT authentication)
+    const createUsersTable = `
+        CREATE TABLE IF NOT EXISTS users (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            username TEXT UNIQUE NOT NULL,
+            password TEXT NOT NULL
+        )
+    `;
+
+    // Schema for Courses (Updated with user_id for data isolation)
     const createCoursesTable = `
         CREATE TABLE IF NOT EXISTS courses (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             name TEXT NOT NULL,
-            instructor TEXT
+            instructor TEXT,
+            user_id INTEGER,
+            FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
         )
     `;
 
-    // Schema for Tasks
+    // Schema for Tasks (Updated with user_id for data isolation)
     const createTasksTable = `
         CREATE TABLE IF NOT EXISTS tasks (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -35,7 +46,9 @@ function initializeTables() {
             status TEXT DEFAULT 'pending',
             deadline DATE,
             course_id INTEGER,
-            FOREIGN KEY (course_id) REFERENCES courses(id) ON DELETE CASCADE
+            user_id INTEGER,
+            FOREIGN KEY (course_id) REFERENCES courses(id) ON DELETE CASCADE,
+            FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
         )
     `;
 
@@ -43,7 +56,11 @@ function initializeTables() {
         // Enforce foreign key constraints in SQLite (important for ON DELETE CASCADE)
         db.run("PRAGMA foreign_keys = ON;");
 
-        // Execute table creation
+        // Execute table creation in sequential order
+        db.run(createUsersTable, (err) => {
+            if (err) console.error("Error creating users table:", err.message);
+        });
+
         db.run(createCoursesTable, (err) => {
             if (err) console.error("Error creating courses table:", err.message);
         });
@@ -52,7 +69,7 @@ function initializeTables() {
             if (err) console.error("Error creating tasks table:", err.message);
         });
         
-        console.log("Database tables initialized successfully.");
+        console.log("Database tables initialized successfully with dynamic data isolation.");
     });
 }
 

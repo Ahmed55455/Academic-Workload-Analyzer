@@ -1,8 +1,9 @@
+```markdown
 <div align="center">
 
 # 📚 Academic Workload Analyzer
 
-**A full-stack web application designed to help students optimize and manage their academic workload by tracking courses, tasks, and deadlines.**
+**A full-stack web application designed to help students optimize and manage their academic workload by tracking courses, tasks, and deadlines with secure multi-user data isolation.**
 
 *Built as part of the **System Analysis and Design** course — Spring 2026*
 
@@ -18,8 +19,9 @@
 |:-----:|------------|
 | 🎨 **Frontend** | HTML5, CSS3, Vanilla JavaScript, Bootstrap 5 |
 | ⚙️ **Backend** | Node.js, Express.js |
-| 🗄️ **Database** | SQLite (Embedded) |
-| 📄 **Docs** | Swagger / OpenAPI 3.0 |
+| 🔒 **Security** | JSON Web Tokens (JWT), Bcrypt.js |
+| 🗄️ **Database** | SQLite (Embedded with Foreign Key Constraints) |
+| 📄 **Docs** | Swagger / OpenAPI 3.0 (with Bearer Auth support) |
 | 🧪 **Testing** | Jest |
 
 </div>
@@ -33,24 +35,30 @@ academic-workload-analyzer/
 ├── backend/
 │   ├── controllers/
 │   │   └── workloadLogic.js      # Isolated business logic for calculations
+│   ├── middleware/
+│   │   └── auth.js               # JWT verification middleware for route protection
 │   ├── routes/
-│   │   ├── courses.js            # Course API endpoints (CRUD)
-│   │   ├── dashboard.js          # Dashboard statistics endpoints
-│   │   └── tasks.js              # Task API endpoints (CRUD)
+│   │   ├── auth.js               # Public endpoints for user registration & login
+│   │   ├── courses.js            # Course API endpoints (CRUD with user isolation)
+│   │   ├── dashboard.js          # Dashboard statistics endpoints (User-specific context)
+│   │   └── tasks.js              # Task API endpoints (CRUD with user isolation)
 │   ├── tests/
 │   │   └── workloadLogic.test.js # Jest unit tests for the business logic
-│   ├── database.js               # SQLite database setup and schema initialization
-│   └── server.js                 # Entry point, Express setup, and SPA fallback
+│   ├── database.js               # SQLite database setup, multi-user schema initialization
+│   └── server.js                 # Entry point, Express setup, security initialization, SPA fallback
 ├── frontend/
 │   ├── css/
 │   │   └── style.css             # Custom UI enhancements and hover effects
 │   ├── js/
-│   │   ├── api.js                # Fetch API calls to backend
-│   │   └── app.js                # UI logic, DOM manipulation, and SPA routing
-│   └── index.html                # Main application interface
+│   │   ├── api.js                # Fetch API calls to backend with dynamic JWT header injections
+│   │   ├── app.js                # UI logic, DOM manipulation, and frontend routing guards
+│   │   └── login.js              # Account authentication, registration checking & toggle UI logic
+│   ├── index.html                # Main application interface (Dashboard view)
+│   └── login.html                # User registration and authentication interface portal
 ├── package.json                  # Dependencies and scripts
-├── swagger.yaml                  # Swagger configuration file
+├── swagger.yaml                  # Swagger configuration file with token authentication security locks
 └── README.md                     # Project documentation
+
 ```
 
 ---
@@ -59,78 +67,72 @@ academic-workload-analyzer/
 
 ### Prerequisites
 
-- Node.js (v14 or higher)
-- npm (Node Package Manager)
+* Node.js (v14 or higher)
+* npm (Node Package Manager)
 
 ### Steps
 
 **1. Clone the repository**
 
 ```bash
-git clone https://github.com/Ahmed55455/Academic-Workload-Analyzer.git
+git clone [https://github.com/Ahmed55455/Academic-Workload-Analyzer.git]
+          (https://github.com/Ahmed55455/Academic-Workload-Analyzer.git)
 cd academic-workload-analyzer
+
 ```
 
-**2. Install backend dependencies**
+**2. Install dependencies**
 
 ```bash
 npm install
+
 ```
 
 **3. Start the backend server**
 
 ```bash
 node backend/server.js
+
 ```
 
 > 💡 The server will start, initialize the SQLite database automatically, and run on `http://localhost:3000`
 
 **4. Access the application**
 
-Open your web browser and navigate to: 🔗 [http://localhost:3000](http://localhost:3000)
+Open your web browser and navigate to: 🔗 [http://localhost:3000](https://www.google.com/search?q=http://localhost:3000)
 
 ---
 
 ## 🚀 API Endpoints
 
-<details>
-<summary><b>📘 Courses API &nbsp;—&nbsp; <code>/api/courses</code></b></summary>
+| Method | Endpoint | Description |
+| --- | --- | --- |
+| `POST` | `/api/auth/register` | Register a new student account (Enforces double-check confirmation logic) |
+| `POST` | `/api/auth/login` | Authenticate student credentials and return an encrypted bearer JWT token |
 
-<br/>
+> 🔒 *Requires Header:* `Authorization: Bearer <JWT_TOKEN>`
 
 | Method | Endpoint | Description |
-|:------:|----------|-------------|
-| `GET` | `/api/courses` | Get all courses |
-| `POST` | `/api/courses` | Create a new course |
-| `PUT` | `/api/courses/:id` | Update a course |
-| `DELETE` | `/api/courses/:id` | Delete a course |
+| --- | --- | --- |
+| `GET` | `/api/courses` | Get all courses belonging ONLY to the logged-in student account |
+| `POST` | `/api/courses` | Create a new course linked directly to the active user profile |
+| `PUT` | `/api/courses/:id` | Update a course entity (Ownership context matching enforced) |
+| `DELETE` | `/api/courses/:id` | Delete a course and its associated tasks (Ownership context matching enforced) |
 
-</details>
-
-<details>
-<summary><b>📗 Tasks API &nbsp;—&nbsp; <code>/api/tasks</code></b></summary>
-
-<br/>
+> 🔒 *Requires Header:* `Authorization: Bearer <JWT_TOKEN>`
 
 | Method | Endpoint | Description |
-|:------:|----------|-------------|
-| `GET` | `/api/tasks` | Get all tasks (includes joined course names) |
-| `POST` | `/api/tasks` | Create a new task |
-| `PUT` | `/api/tasks/:id` | Update a task |
-| `DELETE` | `/api/tasks/:id` | Delete a task |
+| --- | --- | --- |
+| `GET` | `/api/tasks` | Get all tasks belonging ONLY to the logged-in user (includes joined course names) |
+| `POST` | `/api/tasks` | Create a new task tied to the active user account |
+| `PUT` | `/api/tasks/:id` | Update an existing task (Ownership context matching enforced) |
+| `DELETE` | `/api/tasks/:id` | Delete an assignment task row securely (Ownership context matching enforced) |
 
-</details>
-
-<details>
-<summary><b>📊 Dashboard API &nbsp;—&nbsp; <code>/api/dashboard</code></b></summary>
-
-<br/>
+> 🔒 *Requires Header:* `Authorization: Bearer <JWT_TOKEN>`
 
 | Method | Endpoint | Description |
-|:------:|----------|-------------|
-| `GET` | `/api/dashboard/stats` | Retrieve workload statistics and dynamic metrics |
-
-</details>
+| --- | --- | --- |
+| `GET` | `/api/dashboard/stats` | Retrieve isolated workload statistics and dynamic user-specific metrics |
 
 ---
 
@@ -141,7 +143,7 @@ Open your web browser and navigate to: 🔗 [http://localhost:3000](http://local
 The system performs the following calculations automatically:
 
 | Calculation | Logic / Description |
-|-------------|---------------------|
+| --- | --- |
 | ✅ **Completion Rate** | `(completed tasks / total tasks) × 100` — Rounded to the nearest integer |
 | ⚠️ **Overdue Count** | Counts tasks where `deadline < today` AND `status ≠ completed` |
 | 🏆 **Busiest Course** | Identifies the course entity associated with the highest frequency of tasks |
@@ -152,11 +154,9 @@ The system performs the following calculations automatically:
 
 Interactive Swagger documentation is integrated directly into the application. Once the server is running, explore and test all API endpoints at:
 
-<div align="center">
+🔗 **[http://localhost:3000/api-docs](https://www.google.com/search?q=http://localhost:3000/api-docs)**
 
-🔗 **[http://localhost:3000/api-docs](http://localhost:3000/api-docs)**
-
-</div>
+> 💡 *Testing Secure Endpoints via Swagger UI: Execute your login request under the **Auth** section, copy the parsed text token string from the successful server response, scroll up to click the **Authorize** lock button layout, paste it inside the value input container, and hit close.*
 
 ---
 
@@ -166,6 +166,7 @@ The business logic is fully covered by unit tests using **Jest**. To run the tes
 
 ```bash
 npx jest
+
 ```
 
 **Expected output:**
@@ -174,42 +175,35 @@ npx jest
 PASS  backend/tests/workloadLogic.test.js
 Test Suites: 1 passed, 1 total
 Tests:       7 passed, 7 total
+
 ```
 
 ---
 
 ## ✅ Key Features
 
-<div align="center">
-
 | Feature | Description |
-|:-------:|-------------|
-| 🔄 **Full CRUD Operations** | Complete data management for Courses and Tasks |
-| 🔗 **Relational Data** | Tasks linked to Courses via `course_id` foreign keys |
-| 🏗️ **Architectural Separation** | Business logic decoupled from API routes for robust testing |
-| ⚡ **Single Page Application** | Seamless navigation using Vanilla JavaScript with no full page reloads |
-| 📄 **Interactive API Docs** | Powered by Swagger UI |
-| 🗄️ **Zero-Config Database** | Embedded SQLite database auto-generates on server start |
-| 📊 **Interactive Dashboard** | Real-time counters, overdue detection, completion rate, busiest course |
-| 🎨 **Modern UI** | Responsive Bootstrap 5 layout with modals and Toast notifications |
-
-</div>
+| --- | --- |
+| 🔒 **Multi-User Security Guard** | Secure user registration and session state verification via cryptographically signed JSON Web Tokens (JWT) and Bcrypt password hashing |
+| 🛡️ **Account Data Isolation** | Complete database query segmentation using parameterized runtime execution locks (`WHERE user_id = ?`) preventing accidental data cross-contamination |
+| 🔄 **Full CRUD Operations** | Complete transactional data management operations for tracking Courses and Tasks |
+| 🔗 **Relational Data Integrity** | Database level table relations linking Task records safely to Course IDs with cascaded cleanup configurations |
+| 🏗️ **Architectural Separation** | Core mathematical algorithms decoupled from network layer routes for structural testability |
+| ⚡ **Single Page Application** | Clean, fast view routing management handled using Vanilla JavaScript components with native client tracking restrictions |
+| 📄 **Interactive API Docs** | Powered by Swagger UI with unified bearer scheme locking controls |
+| 🗄️ **Zero-Config Database** | Embedded SQLite relational storage engine that auto-generates on server bootstrap execution |
+| 📊 **Interactive Dashboard** | Real-time calculation widgets showing completion rates, task frequencies, overdue markers, and dynamic course-specific lists |
+| 🎨 **Modern UI Layout** | Fully responsive Bootstrap layout system utilizing secure input placeholders, modal boxes, and native Toast notifications |
 
 ---
 
 ## 👨‍💻 Author
 
-<div align="center">
-
 | Field | Details |
-|:-----:|---------|
+| --- | --- |
 | 🧑 **Name** | Ahmed Ehab Hassan Ali |
 | 🪪 **Student ID** | 220303975 |
 | 🏛️ **Institution** | Istanbul Arel University |
 | 📚 **Course** | System Analysis and Design — Spring 2026 |
 
-<br/>
-
 *Made with ❤️ for the System Analysis and Design course*
-
-</div>
