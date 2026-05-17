@@ -1,4 +1,3 @@
-```markdown
 <div align="center">
 
 # 📚 Academic Workload Analyzer
@@ -13,8 +12,6 @@
 
 ## 🛠️ Tech Stack
 
-<div align="center">
-
 | Layer | Technology |
 |:-----:|------------|
 | 🎨 **Frontend** | HTML5, CSS3, Vanilla JavaScript, Bootstrap 5 |
@@ -23,8 +20,6 @@
 | 🗄️ **Database** | SQLite (Embedded with Foreign Key Constraints) |
 | 📄 **Docs** | Swagger / OpenAPI 3.0 (with Bearer Auth support) |
 | 🧪 **Testing** | Jest |
-
-</div>
 
 ---
 
@@ -58,7 +53,6 @@ academic-workload-analyzer/
 ├── package.json                  # Dependencies and scripts
 ├── swagger.yaml                  # Swagger configuration file with token authentication security locks
 └── README.md                     # Project documentation
-
 ```
 
 ---
